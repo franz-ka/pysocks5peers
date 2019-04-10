@@ -1,6 +1,5 @@
 import socket
-# PySocks - https://github.com/Anorov/PySocks
-import socks
+import socks # PySocks - https://github.com/Anorov/PySocks
 import time
 import random
 import sys
@@ -8,13 +7,15 @@ from byteutils import *
 
 if len(sys.argv) > 1:
     random.seed(int(sys.argv[1]))
+
 PEER_ID_LEN=30
 PEED= intb(random.randint(
     int( '1'+'0'*(PEER_ID_LEN-1) ),
     int( '9'*PEER_ID_LEN )
     ))
+print('my id', PEED)
 peerths = []
-SER_HOST = '121.228.179.96'#ip publica del server
+SER_HOST = '111.228.173.96'#ip publica del server
 SER_PORT = 65432
 
 ## CTRL+C
@@ -36,34 +37,37 @@ signal.signal(signal.SIGINT, signal_handler)
 # (echo authenticate '"123"'; echo signal newnym; echo quit) | nc 127.0.0.1 9051
 socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
 s = socks.socksocket()
+s.settimeout(5)
 s.connect((SER_HOST, SER_PORT))
 s.sendall(b'nuevo'+PEED)
 #s.sendall(b'3'*PEER_ID_LEN)
-s.settimeout(5)
 r = s.recv(1024)
-print(r)
 if r:
-    npeers = b2int(r[:2])
-    if npeers:
-        if len(r[2:]) < npeers*PEER_ID_LEN:
-            print('peer ids short')
+    def recvPeers(r):
+        peerths = []
+        npeers = b2int(r[:2])
+        if npeers:
+            if len(r[2:]) < npeers * PEER_ID_LEN:
+                print('peer ids short')
+            else:
+                trucpeers = []
+                for _ in range(npeers):
+                    pid = r[2 + PEER_ID_LEN * _:2 + PEER_ID_LEN * (_ + 1)]
+                    peerths.append(pid)
+                    trucpeers.append(b2str(pid[:4])+'...')
+                print('peer pool', len(peerths), ', '.join(trucpeers))
         else:
-            for _ in range(npeers):
-                peerths.append(r[2+PEER_ID_LEN*_:2+PEER_ID_LEN*(_+1)])
-            print('peers shared', len(peerths))
-    else:
-        print('no peers')
+            print('no peers')
 
+    recvPeers(r)
     while 1:
-        s.send(b'jijij')
-        s.send(intb(random.randint(111,999)))
-        r=s.recv(128)
-        print(r)
-        if not r:
-            break
         time.sleep(2)
         s.send(b'getpeers')
-        time.sleep(2)
+        r=s.recv(128)
+        if not r:
+            print('remote closed')
+            break
+        recvPeers(r)
 else:
     print('remote closed')
 

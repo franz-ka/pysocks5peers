@@ -1,5 +1,6 @@
 import threading
 import socket
+import datetime
 import time
 import sys
 from byteutils import *
@@ -33,15 +34,13 @@ class PeerThread(threading.Thread):
         except: pass
         peerths[self.peerid] = None
 
-    def run(self):
-        print('PeerThread.run', threading.current_thread().name)
-        # send peer data, except himself
+    def peersData(self):
         pdata = b''
-        peerc = len(peerths) - 1
+        peerc = len(peerths) - 1#except himself
         if peerc < 1:
             pdata = b'00'
         else:
-            #count
+            #how many
             if peerc < 10:
                 pdata = b'0' + intb(peerc)
             else:
@@ -50,7 +49,12 @@ class PeerThread(threading.Thread):
             for peerid in peerths:
                 if peerid != self.peerid:
                     pdata += peerid
-        self.sock.sendall(pdata)
+        return pdata
+
+    def run(self):
+        print('PeerThread.run', threading.current_thread().name)
+        # send peer data
+        self.sock.sendall(self.peersData())
         while 1:
             r=b''
             try: r = self.sock.recv(50)
@@ -60,12 +64,12 @@ class PeerThread(threading.Thread):
                 print('Peer closed conn', self.add)
                 return self.die()
             if r.find(b'getpeers')==0:
-                self.sock.send(b'pppp')
+                self.sock.sendall(self.peersData())
                 pass
             else:
                 print(r)
-                self.sock.send(b'jojojo')
-                time.sleep(2)
+                #self.sock.sendall(b'jojojo')
+                time.sleep(5)
 
 
 class ServerThread(threading.Thread):
@@ -76,6 +80,7 @@ class ServerThread(threading.Thread):
         self.port = port
         self.peerths = peerths
         self.S = None
+        self.serstt = 0
 
     def die(self):
         print('Cerrando peer sockets')
@@ -94,6 +99,7 @@ class ServerThread(threading.Thread):
         self.S.settimeout(SER_TH_CLOCK)
         self.S.bind((self.host, self.port))
         self.S.listen()
+        self.serstt = datetime.datetime.now()
         print('Listening on', (self.host, self.port))
         c, a = (0,0)
         while 1:
@@ -148,11 +154,11 @@ sth = ServerThread(HOST, PORT)
 sth.start()
 while 1:
     time.sleep(MAIN_TH_CLOCK)
-
+    elaps = datetime.datetime.now() - sth.serstt if sth.serstt else 0
     connps = 0
     for p in peerths:
         if peerths[p]!=None: connps += 1
-    print('port=',PORT,', ths=', threading.active_count()-1, ', kwnpeers=',len(peerths), ', connpeers=',connps)
+    print('on=',str(elaps)[:7],'port=',PORT,', ths=', threading.active_count()-1, ', kwnpeers=',len(peerths), ', connpeers=',connps)
 
 
 
