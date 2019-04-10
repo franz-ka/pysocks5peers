@@ -7,9 +7,9 @@ Para el primer uso:
 2. activamos el venv `source venv/bin/activate`
 3. instalamos dependencias `pip install -r requirements.txt`
 
-El servidor escucha en el puerto tcp 65432. Por ende debemos abrir el puerto en el router (port fowarding).
+El servidor escucha en el puerto tcp 65432. Por ende debemos abrir el puerto en el router (port fowarding) y settear la variable `HOST` en `ser.py` con la ip interna lan.
 
-El cliente se conecta al servidor usando `tor`. Por ende debemos tenerlo instalado. Se asume que esta en el puerto por defecto 9050.
+El cliente se conecta al servidor usando `tor`. Por ende debemos tenerlo instalado. Se asume que tor esta en el puerto por defecto 9050.
 
 Arrancamos el servidor `python3 ser.py`
 
