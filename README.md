@@ -1,6 +1,8 @@
 **! ! EN PRODUCCIÓN ! !**
 
-# Servidor-cliente socks5 python 
+# Red de peers socks5 en python 
+
+La idea principal es que cada peer hostee una onion y se conecte a otros peers en otras onions. Hay una peer pool compartida entre todos los peers, que representaria la red entera, la subred, y cuando un nuevo peer se introduce se distribuye su peer id a todos los peers y se le da los peer ids de toda la peer pool.
 
 Para el primer uso: 
 1. en la raiz creamos un virtual env `python3 -m venv /venv`
