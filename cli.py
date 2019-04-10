@@ -14,7 +14,7 @@ PEED= intb(random.randint(
     int( '9'*PEER_ID_LEN )
     ))
 peerths = []
-SER_HOST = '181.228.179.96'#ip publica del server
+SER_HOST = '121.228.179.96'#ip publica del server
 SER_PORT = 65432
 
 ## CTRL+C
@@ -32,8 +32,8 @@ def signal_handler(sig, frame):
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
-# to change tor circuit ()
-# (echo authenticate '"zxc123"'; echo signal newnym; echo quit) | nc 127.0.0.1 9051
+# to change tor circuit (must have ORPort and password set)
+# (echo authenticate '"123"'; echo signal newnym; echo quit) | nc 127.0.0.1 9051
 socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
 s = socks.socksocket()
 s.connect((SER_HOST, SER_PORT))
